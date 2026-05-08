@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id            Int      @id @default(autoincrement())
+  username      String   @unique
+  password      String
+  twoFactorSecret String @default("")
+  twoFactorEnabled Boolean @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Year {
+  id        Int       @id @default(autoincrement())
+  name      String
+  sortOrder Int       @default(0)
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  lectures  Lecture[]
+}
+
+model Lecture {
+  id        Int       @id @default(autoincrement())
+  name      String
+  yearId    Int
+  sortOrder Int       @default(0)
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  year      Year      @relation(fields: [yearId], references: [id])
+  books     Book[]
+}
+
+model Book {
+  id           Int          @id @default(autoincrement())
+  name         String
+  description  String       @default("")
+  image        String
+  lectureId    Int
+  sortOrder    Int          @default(0)
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  lecture      Lecture      @relation(fields: [lectureId], references: [id])
+  versions     BookVersion[]
+}
+
+model BookVersion {
+  id        Int      @id @default(autoincrement())
+  name      String
+  image     String
+  price     Float
+  bookId    Int
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  book      Book     @relation(fields: [bookId], references: [id])
+  orders    Order[]
+}
+
+model PaymentAccount {
+  id          Int      @id @default(autoincrement())
+  name        String
+  type        String
+  accountName String   @default("")
+  number      String
+  description String   @default("")
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Order {
+  id              Int         @id @default(autoincrement())
+  customerName    String
+  phone           String
+  transferFrom    String      @default("")
+  paymentMethod   String
+  screenshot      String      @default("")
+  notes           String      @default("")
+  status          String      @default("pending")
+  bookVersionId   Int
+  bookVersion     BookVersion @relation(fields: [bookVersionId], references: [id])
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Setting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+}
